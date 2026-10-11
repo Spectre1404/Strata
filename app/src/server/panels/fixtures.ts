@@ -32,7 +32,9 @@ export async function getCounters(): Promise<Counters> {
   for (const t of trials) {
     familyCounts[t.family] = (familyCounts[t.family] ?? 0) + 1;
   }
-  const effectiveAttempts = new Set(trialGroups.map((g) => g.numeric_group)).size;
+  // Same null-when-empty pattern as mongo.ts, for consistency, even though
+  // the fixtures always carry trial_groups rows.
+  const effectiveAttempts = trialGroups.length > 0 ? new Set(trialGroups.map((g) => g.numeric_group)).size : null;
   return {
     sessionAttempts: sessionId ? trials.filter((t) => t.session_id === sessionId).length : 0,
     totalAttempts: trials.length,

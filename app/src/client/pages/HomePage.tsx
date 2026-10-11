@@ -19,8 +19,8 @@ export default function HomePage() {
         <PanelB />
         <PanelA />
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <PanelPlaceholder title="The verdict" note="Opening the Vault and the control-row comparison land in T4." />
-          <PanelPlaceholder title="Blocked and learned" note="Blocked attempts and the Strategist's rules land in T4." />
+          <PanelPlaceholder title="The verdict" note="Coming soon: opening the Vault and comparing against control strategies." />
+          <PanelPlaceholder title="Blocked and learned" note="Coming soon: blocked attempts and the Strategist's rules." />
         </div>
       </div>
     </Page>
