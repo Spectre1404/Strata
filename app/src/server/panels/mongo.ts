@@ -66,7 +66,10 @@ export async function getCounters(): Promise<Counters> {
   for (const t of trials) {
     familyCounts[t.family] = (familyCounts[t.family] ?? 0) + 1;
   }
-  const effectiveAttempts = new Set(trialGroups.map((g) => g.numeric_group)).size;
+  // T5 (grouping) isn't built, per Shiv's call to skip it unless everything
+  // else is done — trial_groups will be empty against live data, so fall
+  // back to the total rather than show a misleading "0 effective" count.
+  const effectiveAttempts = trialGroups.length > 0 ? new Set(trialGroups.map((g) => g.numeric_group)).size : trials.length;
   return {
     sessionAttempts: sessionId ? trials.filter((t) => t.session_id === sessionId).length : 0,
     totalAttempts: trials.length,
