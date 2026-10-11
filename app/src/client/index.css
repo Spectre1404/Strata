@@ -1,0 +1,40 @@
+@import "tailwindcss";
+
+@source "./";
+
+/* Chart roles (dataviz skill palette). Light values on :root, dark steps
+   under prefers-color-scheme — same hues, stepped for the dark surface, not
+   an inverted flip. */
+:root {
+  --viz-surface: #fcfcfb;
+  --viz-text-primary: #0b0b0b;
+  --viz-text-secondary: #52514e;
+  --viz-muted: #898781;
+  --viz-grid: #e1e0d9;
+  --viz-baseline: #c3c2b7;
+  --viz-series-1: #2a78d6; /* full-memory bar — the headline threshold */
+  --viz-series-2: #eb6834; /* per-session bar — sawtooth */
+  --viz-warning: #fab219; /* luck passed as discovery */
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --viz-surface: #1a1a19;
+    --viz-text-primary: #ffffff;
+    --viz-text-secondary: #c3c2b7;
+    --viz-muted: #898781;
+    --viz-grid: #2c2c2a;
+    --viz-baseline: #383835;
+    --viz-series-1: #3987e5;
+    --viz-series-2: #d95926;
+    --viz-warning: #fab219;
+  }
+}
+
+/* Base UI: establish a stacking context at the root so portalled
+   popups (Dialog, Select, Menu, Tooltip) layer above page content. */
+html {
+  isolation: isolate;
+}
+body {
+  position: relative;
+}
