@@ -2,8 +2,9 @@
 
 Steps, in order:
   probe                        check archive paths, timestamp units and ranking files
-  pool [--rank-interval 1d]    point-in-time top 30 per month -> data/pool.json
-  download [--interval 1h]     hourly spot + premium for the pool, checksum-verified
+  pool [--rank-interval 1d]    point-in-time top 30 per month -> repro/pool.json
+  download [--pool PATH]       hourly spot + premium for the pool, checksum-verified; writes
+                               repro/manifest.json, or verifies against it when it exists
   load --test|--live           split at RESEARCH_END and insert into research_bars / vault_bars
   universe --test|--live       insert universe rows for research months
   verify --test|--live         counts against data/manifest-*.json, no research row past the cutoff
@@ -12,6 +13,7 @@ Admin role (CLAUDE.md rule 3) for load and universe only: insert-only, and refus
 target collection already has data. verify uses the researcher role and never reads vault_bars.
 """
 import argparse
+import hashlib
 import json
 import sys
 from concurrent.futures import ThreadPoolExecutor
@@ -28,7 +30,9 @@ from core.db import get_db  # noqa: E402
 WORKERS = 16
 POOL_MAX = 170
 RANK_FROM = date(2019, 6, 1)   # 6 months of history before 2020-01, plus one
-POOL_FILE = binance.DATA_DIR / "pool.json"
+REPRO_DIR = Path(__file__).resolve().parents[1] / "repro"
+POOL_FILE = REPRO_DIR / "pool.json"            # committed: universe, pool, data months; no volumes
+FILES_MANIFEST = REPRO_DIR / "manifest.json"   # committed: every hourly file used and its sha256
 KB_PER_MONTH = {"spot": 43.4, "premium": 16.3}   # measured by probe on BTCUSDT 1h
 BARS_PER_MONTH = 744
 
@@ -153,8 +157,8 @@ def cmd_pool(args) -> int:
     return 0
 
 
-def read_pool() -> dict:
-    pool = json.loads(POOL_FILE.read_text())
+def read_pool(path: Path = POOL_FILE) -> dict:
+    pool = json.loads(Path(path).read_text())
     n = len(pool["research_pairs"]) + len(pool["vault_only_pairs"])
     if n > POOL_MAX:
         sys.exit(f"pool {n} is above {POOL_MAX}; not continuing")
@@ -167,9 +171,12 @@ def pool_months(pool: dict) -> dict[str, set[tuple[int, int]]]:
 
 
 def cmd_download(args) -> int:
-    pool = read_pool()
+    pool = read_pool(args.pool)
     wanted = pool_months(pool)
     symbols = sorted(wanted)
+    expected = json.loads(FILES_MANIFEST.read_text())["files"] if FILES_MANIFEST.exists() else None
+    print(f"pool: {args.pool}; " + (f"verifying against {FILES_MANIFEST} ({len(expected)} files)"
+                                     if expected is not None else f"will write {FILES_MANIFEST}"))
 
     pairs = [(s, k) for s in symbols for k in binance.KIND_PREFIX]
     listed = pmap(lambda p: binance.list_months(p[0], args.interval, p[1]), pairs)
@@ -178,18 +185,37 @@ def cmd_download(args) -> int:
 
     def fetch(job):
         s, k, y, m = job
+        rel = binance.archive_path(s, args.interval, y, m, k)
         try:
-            return job, Path(binance.download_month(s, args.interval, y, m, k)).stat().st_size, None
+            path = Path(binance.download_month(s, args.interval, y, m, k))
+            sha = hashlib.sha256(path.read_bytes()).hexdigest()
         except Exception as exc:  # report every failure, keep going
-            return job, 0, str(exc)
+            return rel, 0, None, str(exc)
+        if expected is not None and expected.get(rel) != sha:
+            return rel, 0, sha, "not in repro manifest" if rel not in expected else "sha256 differs from repro manifest"
+        return rel, path.stat().st_size, sha, None
 
     results = pmap(fetch, jobs)
-    failures = [(j, e) for j, _, e in results if e]
-    total = sum(b for _, b, _ in results)
+    failures = [(rel, e) for rel, _, _, e in results if e]
+    total = sum(b for _, b, _, _ in results)
     print(f"downloaded or reused {len(jobs) - len(failures)} files, {total / 1e6:.1f} MB")
-    for (s, k, y, m), e in failures:
-        print(f"FAILED {k} {s} {y}-{m:02d}: {e}")
-    return 1 if failures else 0
+    for rel, e in failures:
+        print(f"FAILED {rel}: {e}")
+    if expected is not None:
+        missing = sorted(set(expected) - {rel for rel, *_ in results})
+        for rel in missing:
+            print(f"FAILED {rel}: in repro manifest but not in this download")
+        return 1 if failures or missing else 0
+    if failures:
+        print(f"{FILES_MANIFEST} not written because of failures")
+        return 1
+    REPRO_DIR.mkdir(exist_ok=True)
+    FILES_MANIFEST.write_text(json.dumps({
+        "interval": args.interval,
+        "files": {rel: sha for rel, _, sha, _ in sorted(results)},
+    }, indent=1))
+    print(f"wrote {FILES_MANIFEST} ({len(results)} files)")
+    return 0
 
 
 def ensure_empty(db, names: list[str]) -> None:
@@ -296,6 +322,8 @@ def main() -> int:
     sp.add_argument("--rank-interval", default="1d", choices=["1d", "1mo"])
     sd = sub.add_parser("download")
     sd.add_argument("--interval", default=env("BAR_INTERVAL", "1h"))
+    sd.add_argument("--pool", type=Path, default=POOL_FILE,
+                    help="pool file to download for (default repro/pool.json); skips ranking")
     for name in ("load", "universe", "verify"):
         s = sub.add_parser(name)
         target = s.add_mutually_exclusive_group(required=True)
