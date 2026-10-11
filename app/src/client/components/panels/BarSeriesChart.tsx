@@ -40,7 +40,7 @@ export default function BarSeriesChart({ points, onSelect }: BarSeriesChartProps
 
   return (
     <div>
-      <ResponsiveContainer width="100%" height={340}>
+      <ResponsiveContainer width="100%" height={440}>
         <ComposedChart data={points} margin={{ top: 8, right: 16, bottom: 8, left: 0 }}>
           <CartesianGrid stroke="var(--viz-grid)" vertical={false} />
           <XAxis
@@ -71,7 +71,7 @@ export default function BarSeriesChart({ points, onSelect }: BarSeriesChartProps
       {highlightCount > 0 && (
         <p className="flex items-center gap-1.5 text-xs text-[color:var(--viz-text-secondary)] mt-1">
           <AlertTriangle className="size-3.5" style={{ color: 'var(--viz-warning)' }} aria-hidden="true" />
-          {highlightCount} attempt{highlightCount === 1 ? '' : 's'} cleared this session's bar but not the full record — luck passed as discovery. Click a dot for details.
+          {highlightCount} attempt{highlightCount === 1 ? '' : 's'}: passes this session's test, fails the full-memory test. Click a dot for details.
         </p>
       )}
     </div>

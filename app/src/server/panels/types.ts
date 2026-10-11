@@ -69,7 +69,8 @@ export interface TrialGroup {
 export interface Counters {
   sessionAttempts: number;
   totalAttempts: number;
-  effectiveAttempts: number;
+  /** null when trial_groups is empty — grouping (T5) hasn't run yet. */
+  effectiveAttempts: number | null;
   currentSessionId: string | null;
   familyCounts: Record<string, number>;
 }

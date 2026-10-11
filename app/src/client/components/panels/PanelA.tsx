@@ -3,11 +3,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/client/components/ui
 import { useCounters, useTrialStream } from '@/client/hooks/usePanels';
 import FamilyBarChart from './FamilyBarChart';
 
-function StatTile({ label, value }: { label: string; value: number }) {
+function StatTile({ label, value, caption }: { label: string; value: number | null | undefined; caption?: string }) {
   return (
     <div>
       <div className="text-xs text-gray-500">{label}</div>
-      <div className="text-2xl font-semibold text-gray-900">{value}</div>
+      <div className="text-2xl font-semibold text-gray-900">{value === null ? '—' : (value ?? 0)}</div>
+      {caption && <div className="text-[11px] text-gray-400">{caption}</div>}
     </div>
   );
 }
@@ -53,7 +54,11 @@ export default function PanelA() {
           <div className="flex flex-col gap-4 w-36">
             <StatTile label="This session" value={counters?.sessionAttempts ?? 0} />
             <StatTile label="All sessions" value={counters?.totalAttempts ?? 0} />
-            <StatTile label="Effective" value={counters?.effectiveAttempts ?? 0} />
+            <StatTile
+              label="Effective"
+              value={counters?.effectiveAttempts}
+              caption={counters?.effectiveAttempts === null ? 'grouping not built yet' : undefined}
+            />
           </div>
         </div>
         <div>

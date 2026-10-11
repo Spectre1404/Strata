@@ -4,11 +4,13 @@
 // Connects with its own native MongoClient on MONGODB_URI_APP / MONGODB_DB
 // (read explicitly, not Modelence's own MONGODB_URI) rather than Modelence's
 // `Store` class: Store binds to Modelence's own managed database connection,
-// which is a separate thing from our Atlas sandbox (see modelence.config.ts /
-// the Modelence Cloud environment this app is linked to). Reading the app
-// role's own URI directly keeps panel reads on that role, matching
-// docs/CONTRACTS.md's role table, independent of whatever Modelence Cloud
-// uses internally.
+// which is a separate thing from our Atlas sandbox. Modelence's own
+// MONGODB_URI lives in .modelence.env (gitignored, written by `npx
+// modelence setup`), not modelence.config.ts — that file only sets
+// serverDir/serverEntry. Reading the app role's own URI directly here keeps
+// panel reads on that role, matching docs/CONTRACTS.md's role table,
+// independent of whatever Modelence Cloud uses internally. See also
+// app/README.md: never set MONGODB_URI itself to an Atlas URI.
 //
 // Unverified against live Atlas as of this commit — no .env values yet. Swap
 // DATA_SOURCE=mongo once Shiv's scripts/seed_fixtures.py has run and my .env
@@ -64,7 +66,11 @@ export async function getCounters(): Promise<Counters> {
   for (const t of trials) {
     familyCounts[t.family] = (familyCounts[t.family] ?? 0) + 1;
   }
-  const effectiveAttempts = new Set(trialGroups.map((g) => g.numeric_group)).size;
+  // T5 (grouping) isn't built, per Shiv's call to skip it unless everything
+  // else is done — trial_groups will be empty against live data. null (not
+  // the total) so the UI can show "grouping not built yet" instead of a
+  // number that looks computed but isn't.
+  const effectiveAttempts = trialGroups.length > 0 ? new Set(trialGroups.map((g) => g.numeric_group)).size : null;
   return {
     sessionAttempts: sessionId ? trials.filter((t) => t.session_id === sessionId).length : 0,
     totalAttempts: trials.length,
@@ -126,13 +132,12 @@ export async function getBarSeries(): Promise<BarPoint[]> {
       barTotal: audit.bar_total,
       passSession: audit.pass_session,
       passTotal: audit.pass_total,
-      // The highlighted dot is the one sitting between the two lines on the
-      // chart itself (sr clears the session bar but not the full-memory
-      // bar) — computed straight from sr vs. the two bar values, not from
-      // pass_session/pass_total (those are DSR-based and can legitimately
-      // disagree with a simple sr-vs-bar read; the highlight should match
-      // what the chart's own lines show).
-      luckPassedAsDiscovery: t.metrics.sr > audit.bar_session && t.metrics.sr <= audit.bar_total
+      // The formal verdicts, not a simple sr-vs-bar read: a sr-vs-bar
+      // comparison also highlights every session's first attempt (that
+      // session's bar is 0 at n=1), which contradicts the detail dialog's
+      // own pass_session/pass_total. pass_session/pass_total are DSR-based
+      // (factor in skew/kurtosis) and are the actual verdict.
+      luckPassedAsDiscovery: audit.pass_session && !audit.pass_total
     });
   });
   return points;

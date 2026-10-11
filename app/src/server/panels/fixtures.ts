@@ -32,7 +32,9 @@ export async function getCounters(): Promise<Counters> {
   for (const t of trials) {
     familyCounts[t.family] = (familyCounts[t.family] ?? 0) + 1;
   }
-  const effectiveAttempts = new Set(trialGroups.map((g) => g.numeric_group)).size;
+  // Same null-when-empty pattern as mongo.ts, for consistency, even though
+  // the fixtures always carry trial_groups rows.
+  const effectiveAttempts = trialGroups.length > 0 ? new Set(trialGroups.map((g) => g.numeric_group)).size : null;
   return {
     sessionAttempts: sessionId ? trials.filter((t) => t.session_id === sessionId).length : 0,
     totalAttempts: trials.length,
@@ -82,12 +84,12 @@ export async function getBarSeries(): Promise<BarPoint[]> {
       barTotal: audit.bar_total,
       passSession: audit.pass_session,
       passTotal: audit.pass_total,
-      // The highlighted dot is the one between the two lines on the chart
-      // (sr clears the session bar but not the full-memory bar), computed
-      // from sr vs. the two bar values rather than pass_session/pass_total
-      // (DSR-based, and can legitimately disagree with a simple sr-vs-bar
-      // read) — the highlight should match what the chart's own lines show.
-      luckPassedAsDiscovery: t.metrics.sr > audit.bar_session && t.metrics.sr <= audit.bar_total
+      // The formal verdicts, not a simple sr-vs-bar read: a sr-vs-bar
+      // comparison also highlights every session's first attempt (that
+      // session's bar is 0 at n=1), which contradicts the detail dialog's
+      // own pass_session/pass_total. pass_session/pass_total are DSR-based
+      // (factor in skew/kurtosis) and are the actual verdict.
+      luckPassedAsDiscovery: audit.pass_session && !audit.pass_total
     });
   });
   return points;

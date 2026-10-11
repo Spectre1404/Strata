@@ -25,7 +25,7 @@ export default function PanelB() {
   return (
     <Card className="border-2 border-gray-900">
       <CardHeader>
-        <CardTitle className="text-lg">The bar</CardTitle>
+        <CardTitle className="text-2xl">The bar</CardTitle>
         <p className="text-sm text-gray-600">
           An agent that forgets its failures will report its luck as discovery. Every attempt counts against it.
         </p>
