@@ -11,7 +11,7 @@ Status: OPEN until answered. Record the answer, who decided, and when.
 | D5 | Trading costs | fee bps and spread bps, with source | S4 | Shiv sets in S4 |
 | D6 | Data rights | Ask organizers: Binance public archive stored in the sandbox, only download scripts in the repo | S1 | Shiv asks in Phase 0 |
 | D7 | Modelence and the sandbox | Can the Modelence app use the Atlas Sandbox connection string? Ask Aram | T1, T6 | Shiv asks in Phase 0 |
-| D8 | Sandbox tier and storage limit | Record what the sandbox allows. Estimate for D1: ~59,000 hourly bars per pair from 2020-01 to 2026-09; spot plus premium for 30 pairs is ~3.5M documents, more if the candidate pool is larger than 30 | S1 | Shiv checks in Phase 0 |
-| D9 | Talal's GitHub handle | For CODEOWNERS and collaborator invite | Repo | OPEN |
+| D8 | Sandbox tier and storage limit | Record what the sandbox allows. Estimate for D1: ~59,000 hourly bars per pair from 2020-01 to 2026-09; spot plus premium for 30 pairs is ~3.5M documents, more if the candidate pool is larger than 30 | S1 | DECIDED Oct 11 (Shiv): M10, AWS us-west-1, 10 GB storage |
+| D9 | Talal's GitHub handle | For CODEOWNERS and collaborator invite | Repo | DECIDED Oct 11 (Shiv): talal2725 |
 | D10 | Problem statement on the submission form | Statement Two (proposed), Statement One secondary | Submission | OPEN |
 | D11 | Windows | Research 2020-01-01 to 2024-12-31; Vault 2025-01-01 to 2026-09-30 (proposed) | S1 | OPEN |
