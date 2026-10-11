@@ -1,0 +1,22 @@
+[
+  { "trial_id": "t01", "embedding": [], "semantic_group": 1,  "numeric_group": 1,  "computed_at": "2026-10-11T18:00:40Z", "fixture": true },
+  { "trial_id": "t02", "embedding": [], "semantic_group": 2,  "numeric_group": 2,  "computed_at": "2026-10-11T18:04:40Z", "fixture": true },
+  { "trial_id": "t03", "embedding": [], "semantic_group": 3,  "numeric_group": 3,  "computed_at": "2026-10-11T18:08:40Z", "fixture": true },
+  { "trial_id": "t04", "embedding": [], "semantic_group": 4,  "numeric_group": 4,  "computed_at": "2026-10-11T18:12:40Z", "fixture": true },
+  { "trial_id": "t05", "embedding": [], "semantic_group": 5,  "numeric_group": 5,  "computed_at": "2026-10-11T18:16:40Z", "fixture": true },
+  { "trial_id": "t06", "embedding": [], "semantic_group": 6,  "numeric_group": 6,  "computed_at": "2026-10-11T18:20:40Z", "fixture": true },
+
+  { "trial_id": "t07", "embedding": [], "semantic_group": 7,  "numeric_group": 7,  "computed_at": "2026-10-11T18:40:40Z", "fixture": true },
+  { "trial_id": "t08", "embedding": [], "semantic_group": 8,  "numeric_group": 8,  "computed_at": "2026-10-11T18:44:40Z", "fixture": true },
+  { "trial_id": "t09", "embedding": [], "semantic_group": 9,  "numeric_group": 6,  "computed_at": "2026-10-11T18:48:40Z", "fixture": true },
+  { "trial_id": "t10", "embedding": [], "semantic_group": 10, "numeric_group": 9,  "computed_at": "2026-10-11T18:52:40Z", "fixture": true },
+  { "trial_id": "t11", "embedding": [], "semantic_group": 11, "numeric_group": 10, "computed_at": "2026-10-11T18:56:40Z", "fixture": true },
+  { "trial_id": "t12", "embedding": [], "semantic_group": 12, "numeric_group": 11, "computed_at": "2026-10-11T19:00:40Z", "fixture": true },
+
+  { "trial_id": "t13", "embedding": [], "semantic_group": 13, "numeric_group": 12, "computed_at": "2026-10-11T19:20:40Z", "fixture": true },
+  { "trial_id": "t14", "embedding": [], "semantic_group": 4,  "numeric_group": 4,  "computed_at": "2026-10-11T19:24:40Z", "fixture": true },
+  { "trial_id": "t15", "embedding": [], "semantic_group": 15, "numeric_group": 13, "computed_at": "2026-10-11T19:28:40Z", "fixture": true },
+  { "trial_id": "t16", "embedding": [], "semantic_group": 16, "numeric_group": 14, "computed_at": "2026-10-11T19:32:40Z", "fixture": true },
+  { "trial_id": "t17", "embedding": [], "semantic_group": 17, "numeric_group": 15, "computed_at": "2026-10-11T19:36:40Z", "fixture": true },
+  { "trial_id": "t18", "embedding": [], "semantic_group": 18, "numeric_group": 16, "computed_at": "2026-10-11T19:40:40Z", "fixture": true }
+]

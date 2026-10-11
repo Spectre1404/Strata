@@ -1,0 +1,7 @@
+[
+  { "session_id": "demo-session-1", "event": "start", "ts": "2026-10-11T18:00:00Z", "policy_version": 1, "fixture": true },
+  { "session_id": "demo-session-1", "event": "end", "ts": "2026-10-11T18:20:00Z", "policy_version": 1, "attempts": 6, "final_hash": "fixture-hash-s1-end", "fixture": true },
+  { "session_id": "demo-session-2", "event": "start", "ts": "2026-10-11T18:40:00Z", "policy_version": 1, "fixture": true },
+  { "session_id": "demo-session-2", "event": "end", "ts": "2026-10-11T19:00:00Z", "policy_version": 1, "attempts": 6, "final_hash": "fixture-hash-s2-end", "fixture": true },
+  { "session_id": "demo-session-3", "event": "start", "ts": "2026-10-11T19:20:00Z", "policy_version": 1, "fixture": true }
+]
