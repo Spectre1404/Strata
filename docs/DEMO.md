@@ -38,8 +38,8 @@ One page, four panels. The Researcher and Auditor are the product; the page is h
 ### Panel B: The bar
 - X axis: attempt number across all sessions. One dot per attempt (its Sharpe).
 - Lines: best Sharpe so far; the per-session bar (resets each session, so it looks like a sawtooth); the full-memory bar (only rises).
-- Highlight any attempt that clears the per-session bar but not the full-memory bar.
-- Click a dot: hypothesis, query, daily returns, verdict under both counts. Source: `audits`, `trials`.
+- Highlight any attempt where `pass_session && !pass_total` (clears the per-session bar but not the full-memory bar).
+- Click a dot: hypothesis, query, verdict under both counts. Source: `audits`, `trials`.
 - Input box "Test my idea" and three preset buttons. Writes to `requests`.
 
 ### Panel C: The verdict
