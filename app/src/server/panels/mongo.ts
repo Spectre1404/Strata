@@ -1,120 +1,49 @@
 // Real implementation of the panel data layer, reading Strata's actual Atlas
-// collections through the `app` role (connected via MONGODB_URI, set to
-// MONGODB_URI_APP's value — see docs/CONTRACTS.md rule 13: the app connects
-// with that role only).
+// collections directly through the `app` role.
 //
-// `indexes: []` on every Store below: the Store constructor requires the
-// field (crashes on undefined), but we deliberately declare none. The
-// collections already exist in Atlas, created by Shiv's setup scripts, and
-// the `app` role has no createIndex privilege (atlas/roles.md) — a non-empty
-// list here would make Modelence try to provision indexes on startup and
-// fail under that role.
+// Connects with its own native MongoClient on MONGODB_URI_APP / MONGODB_DB
+// (read explicitly, not Modelence's own MONGODB_URI) rather than Modelence's
+// `Store` class: Store binds to Modelence's own managed database connection,
+// which is a separate thing from our Atlas sandbox (see modelence.config.ts /
+// the Modelence Cloud environment this app is linked to). Reading the app
+// role's own URI directly keeps panel reads on that role, matching
+// docs/CONTRACTS.md's role table, independent of whatever Modelence Cloud
+// uses internally.
 //
 // Unverified against live Atlas as of this commit — no .env values yet. Swap
 // DATA_SOURCE=mongo once Shiv's scripts/seed_fixtures.py has run and my .env
 // is filled in (see db.ts).
-import { schema, Store } from 'modelence/server';
+import { MongoClient } from 'mongodb';
 import type { Audit, BarPoint, Counters, Prereg, SessionEvent, Trial, TrialGroup, TrialStreamItem } from './types';
 
-const dbSessions = new Store('sessions', {
-  schema: {
-    session_id: schema.string(),
-    event: schema.string(),
-    ts: schema.date(),
-    policy_version: schema.number(),
-    attempts: schema.number().optional(),
-    final_hash: schema.string().optional()
-  },
-  indexes: []
-});
+let client: MongoClient | null = null;
 
-const dbPreregistrations = new Store('preregistrations', {
-  schema: {
-    _id: schema.string(),
-    session_id: schema.string(),
-    ts: schema.date(),
-    text: schema.string(),
-    family: schema.string(),
-    hash: schema.string()
-  },
-  indexes: []
-});
-
-const dbTrials = new Store('trials', {
-  schema: {
-    _id: schema.string(),
-    session_id: schema.string(),
-    seq: schema.number(),
-    ts: schema.date(),
-    source: schema.string(),
-    prereg_id: schema.string(),
-    text: schema.string(),
-    family: schema.string(),
-    pipeline: schema.string(),
-    construction: schema.object({
-      type: schema.string(),
-      top_k: schema.number().nullable(),
-      rebalance_bars: schema.number()
-    }),
-    causality: schema.string(),
-    metrics: schema.object({
-      sr: schema.number(),
-      skew: schema.number(),
-      kurt: schema.number(),
-      t_obs: schema.number(),
-      ann_return: schema.number(),
-      turnover: schema.number()
-    }),
-    prev_hash: schema.string(),
-    hash: schema.string()
-  },
-  indexes: []
-});
-
-const dbAudits = new Store('audits', {
-  schema: {
-    trial_id: schema.string(),
-    ts: schema.date(),
-    n_session: schema.number(),
-    n_total: schema.number(),
-    n_effective: schema.number(),
-    sr: schema.number(),
-    bar_session: schema.number(),
-    bar_total: schema.number(),
-    bar_effective: schema.number(),
-    dsr_session: schema.number(),
-    dsr_total: schema.number(),
-    pass_session: schema.boolean(),
-    pass_total: schema.boolean()
-  },
-  indexes: []
-});
-
-const dbTrialGroups = new Store('trial_groups', {
-  schema: {
-    trial_id: schema.string(),
-    embedding: schema.embedding(),
-    semantic_group: schema.number(),
-    numeric_group: schema.number(),
-    computed_at: schema.date()
-  },
-  indexes: []
-});
+function getDb() {
+  if (!client) {
+    const uri = process.env.MONGODB_URI_APP;
+    if (!uri) {
+      throw new Error('MONGODB_URI_APP is not set — required when DATA_SOURCE=mongo');
+    }
+    client = new MongoClient(uri);
+  }
+  const dbName = process.env.MONGODB_DB;
+  if (!dbName) {
+    throw new Error('MONGODB_DB is not set — required when DATA_SOURCE=mongo');
+  }
+  return client.db(dbName);
+}
 
 // Fixtures.ts (and the shared BarPoint/Trial/etc. shapes in types.ts) work
 // with ISO date strings, matching the static JSON fixtures. Real Mongo docs
-// come back with `Date` objects for `schema.date()` fields — normalize here
-// so the rest of the code never has to care which backend it's talking to.
+// come back with `Date` objects for `ts`. Normalize here so the rest of the
+// code never has to care which backend it's talking to.
 function withIsoTs<T extends { ts: Date }>(doc: T): Omit<T, 'ts'> & { ts: string } {
   return { ...doc, ts: doc.ts.toISOString() };
 }
 
 async function currentSessionId(): Promise<string | null> {
-  // Cast straight after fetch: Store's inferred document type attaches its
-  // own method types (including one named `event`), which shadows
-  // CONTRACTS.md's `sessions.event` field and breaks the string comparisons
-  // below under strict mode.
-  const events = (await dbSessions.fetch({})).map(withIsoTs) as unknown as SessionEvent[];
+  const docs = await getDb().collection<SessionEvent & { ts: Date }>('sessions').find({}).toArray();
+  const events = docs.map(withIsoTs);
   const started = new Set(events.filter((s) => s.event === 'start').map((s) => s.session_id));
   const ended = new Set(events.filter((s) => s.event === 'end').map((s) => s.session_id));
   const open = [...started].filter((id) => !ended.has(id));
@@ -126,13 +55,11 @@ async function currentSessionId(): Promise<string | null> {
 }
 
 export async function getCounters(): Promise<Counters> {
-  const [sessionId, trialDocs, trialGroupDocs] = await Promise.all([
+  const [sessionId, trials, trialGroups] = await Promise.all([
     currentSessionId(),
-    dbTrials.fetch({}),
-    dbTrialGroups.fetch({})
+    getDb().collection<Trial>('trials').find({}).toArray(),
+    getDb().collection<TrialGroup>('trial_groups').find({}).toArray()
   ]);
-  const trials = trialDocs as unknown as Trial[];
-  const trialGroups = trialGroupDocs as unknown as TrialGroup[];
   const familyCounts: Record<string, number> = {};
   for (const t of trials) {
     familyCounts[t.family] = (familyCounts[t.family] ?? 0) + 1;
@@ -148,9 +75,12 @@ export async function getCounters(): Promise<Counters> {
 }
 
 export async function getTrialStream(limit: number): Promise<TrialStreamItem[]> {
-  const [trialDocs, preregDocs] = await Promise.all([dbTrials.fetch({}), dbPreregistrations.fetch({})]);
-  const trials = trialDocs.map(withIsoTs) as unknown as Trial[];
-  const preregs = preregDocs.map(withIsoTs) as unknown as Prereg[];
+  const [trialDocs, preregDocs] = await Promise.all([
+    getDb().collection<Trial & { ts: Date }>('trials').find({}).toArray(),
+    getDb().collection<Prereg & { ts: Date }>('preregistrations').find({}).toArray()
+  ]);
+  const trials = trialDocs.map(withIsoTs);
+  const preregs = preregDocs.map(withIsoTs);
   const preregById = new Map(preregs.map((p) => [p._id, p]));
   return [...trials]
     .sort((a, b) => b.ts.localeCompare(a.ts))
@@ -168,9 +98,12 @@ export async function getTrialStream(limit: number): Promise<TrialStreamItem[]> 
 }
 
 export async function getBarSeries(): Promise<BarPoint[]> {
-  const [trialDocs, auditDocs] = await Promise.all([dbTrials.fetch({}), dbAudits.fetch({})]);
-  const trials = trialDocs.map(withIsoTs) as unknown as Trial[];
-  const audits = auditDocs.map(withIsoTs) as unknown as Audit[];
+  const [trialDocs, auditDocs] = await Promise.all([
+    getDb().collection<Trial & { ts: Date }>('trials').find({}).toArray(),
+    getDb().collection<Audit & { ts: Date }>('audits').find({}).toArray()
+  ]);
+  const trials = trialDocs.map(withIsoTs);
+  const audits = auditDocs.map(withIsoTs);
   const auditByTrialId = new Map(audits.map((a) => [a.trial_id, a]));
   const ordered = [...trials].sort((a, b) => a.ts.localeCompare(b.ts));
 
@@ -193,7 +126,13 @@ export async function getBarSeries(): Promise<BarPoint[]> {
       barTotal: audit.bar_total,
       passSession: audit.pass_session,
       passTotal: audit.pass_total,
-      luckPassedAsDiscovery: audit.pass_session && !audit.pass_total
+      // The highlighted dot is the one sitting between the two lines on the
+      // chart itself (sr clears the session bar but not the full-memory
+      // bar) — computed straight from sr vs. the two bar values, not from
+      // pass_session/pass_total (those are DSR-based and can legitimately
+      // disagree with a simple sr-vs-bar read; the highlight should match
+      // what the chart's own lines show).
+      luckPassedAsDiscovery: t.metrics.sr > audit.bar_session && t.metrics.sr <= audit.bar_total
     });
   });
   return points;

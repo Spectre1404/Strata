@@ -2,10 +2,10 @@ import { useQuery } from '@tanstack/react-query';
 import { modelenceQuery } from 'modelence/client';
 import type { BarPoint, Counters, TrialStreamItem } from '@/server/panels/types';
 
-// Polling every 2s, per docs/DEMO.md's Panel A spec ("implement polling first;
-// add the change stream later only if time allows"). A later upgrade would
-// swap this hook's useQuery for Modelence's modelenceLiveQuery, which wraps a
-// MongoDB change stream server-side — no other code here would change.
+// Polling every 2s — my choice for now, simple and good enough for a demo.
+// A later upgrade would swap this hook's useQuery for Modelence's
+// modelenceLiveQuery, which wraps a MongoDB change stream server-side — no
+// other code here would need to change.
 const POLL_MS = 2000;
 
 export function useCounters() {

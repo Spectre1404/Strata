@@ -82,7 +82,12 @@ export async function getBarSeries(): Promise<BarPoint[]> {
       barTotal: audit.bar_total,
       passSession: audit.pass_session,
       passTotal: audit.pass_total,
-      luckPassedAsDiscovery: audit.pass_session && !audit.pass_total
+      // The highlighted dot is the one between the two lines on the chart
+      // (sr clears the session bar but not the full-memory bar), computed
+      // from sr vs. the two bar values rather than pass_session/pass_total
+      // (DSR-based, and can legitimately disagree with a simple sr-vs-bar
+      // read) — the highlight should match what the chart's own lines show.
+      luckPassedAsDiscovery: t.metrics.sr > audit.bar_session && t.metrics.sr <= audit.bar_total
     });
   });
   return points;

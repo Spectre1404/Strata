@@ -38,6 +38,9 @@ export default function PanelA() {
                   <p className="text-sm text-gray-900 leading-snug">{item.text}</p>
                   <span className="text-sm font-medium text-gray-900 shrink-0">{item.sr.toFixed(3)}</span>
                 </div>
+                <p className="text-[11px] font-mono text-gray-400 truncate" title={item.pipeline}>
+                  {item.pipeline}
+                </p>
                 <div className="flex items-center gap-2 mt-1">
                   <Badge variant="soft" color="neutral">{item.family.replace(/_/g, ' ')}</Badge>
                   <span className="text-[11px] font-mono text-gray-400">{item.preregHash.slice(0, 8)}</span>
