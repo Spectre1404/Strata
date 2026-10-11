@@ -23,8 +23,9 @@ separate role locks the most recent market data away from it entirely.
 
 **Built today**: the Atlas roles and collections that enforce this (and
 pass a 21-point access-control check against the real sandbox), real
-market data ingested and checksum-verified from Binance (163 pairs, 5,926
-hourly files), and the page that will be the window onto it — the attempt
+market data downloaded and checksum-verified from Binance and loading into
+Atlas (163 pairs, 5,926 hourly files), and the page that will be the
+window onto it — the attempt
 stream, the counters, and the bar chart that is the project's one
 memorable element, showing (on fixture data today) the dot that clears a
 session's bar but not the full record. Raindrop instrumentation is built

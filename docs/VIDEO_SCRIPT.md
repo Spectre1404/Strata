@@ -41,17 +41,22 @@ Screen: the attempt stream (fixture data, labeled on screen) — hypothesis,
 family, pre-registration hash, the query, the Sharpe. Point at the three
 counters (session / total / effective).
 Voiceover: *"This is the shape every real attempt will take: hypothesis,
-query, Sharpe, in before the agent sees the result. The hash chain and the
-insert-only enforcement that make it permanent are built at the database
-layer — the Atlas roles are live today; the agent writing to them isn't,
-yet."*
+query, Sharpe, in before the agent sees the result. The insert-only role
+that would enforce this is built today — the Atlas roles pass a 21-point
+access check. The hash chain itself is still planned; the agent writing
+these records isn't built yet."*
 
 **0:45–1:00 — What was built today**
 Screen: the README's "Built today" section, then the repo URL.
 Voiceover: *"Built today, October 11th, at the MongoDB hackathon — Atlas
-roles that make cheating structurally impossible at the database layer,
-and this page, reading real market data checksummed in from Binance.
+roles that make cheating structurally impossible at the database layer.
+The panels here run on fixture data. The real market data, 163 pairs and
+5,926 checksum-verified files, is downloaded and loading into Atlas.
 Repo link's on screen."*
+
+**If you already recorded the line above with the old wording ("reading
+real market data"), re-record it** — that line claimed fixtures were real
+data, which they aren't.
 
 ## Notes for recording
 
