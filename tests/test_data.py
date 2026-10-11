@@ -130,16 +130,49 @@ def test_eligible_symbols_drop_stablecoins_fiat_commodity_wrapped_and_leveraged_
     assert uni.eligible_symbols(symbols) == ["BTCUSDT", "ETHUSDT", "JUPUSDT"]
 
 
-def test_rank_uses_only_the_previous_month():
+def test_eligible_symbols_drop_named_exclusions_and_non_ascii():
+    symbols = ["BTCUSDT", "币安人生USDT", "SNDKBUSDT", "SPCXBUSDT", "ÉTHUSDT"]
+    assert uni.eligible_symbols(symbols) == ["BTCUSDT"]
+
+
+def test_rank_uses_only_the_previous_month_with_one_month_rules():
     volumes = {"AUSDT": {date(2020, 1, 1): 5.0, date(2020, 2, 1): 1.0},
                "BUSDT": {date(2020, 1, 1): 1.0, date(2020, 2, 1): 1e12}}
-    assert uni.rank_month(volumes, date(2020, 2, 1), size=1) == ["AUSDT"]
+    assert uni.rank_month(volumes, date(2020, 2, 1), size=1, min_history=1, trailing=1) == ["AUSDT"]
+
+
+def months_of(start, n, value):
+    return {m: value for m in uni.month_range(start, date(2100, 1, 1))[:n]}
+
+
+def test_rank_requires_six_months_of_history():
+    volumes = {"OLDUSDT": months_of(date(2019, 7, 1), 6, 1.0),      # Jul-Dec 2019
+               "NEWUSDT": months_of(date(2019, 8, 1), 5, 1e12)}     # Aug-Dec 2019 only
+    assert uni.rank_month(volumes, date(2020, 1, 1), size=2) == ["OLDUSDT"]
+
+
+def test_rank_sums_three_trailing_months_and_ignores_the_month_itself():
+    a = months_of(date(2019, 7, 1), 6, 1.0)                          # Oct-Dec sum 3.0
+    b = {**months_of(date(2019, 7, 1), 6, 0.1), date(2019, 12, 1): 2.5, date(2020, 1, 1): 1e12}
+    volumes = {"AUSDT": a, "BUSDT": b}                               # Oct-Dec sum 2.7
+    assert uni.rank_month(volumes, date(2020, 1, 1), size=2) == ["AUSDT", "BUSDT"]
 
 
 def test_month_with_missing_ranking_files_is_reported_short():
     volumes = {f"P{i}USDT": {date(2024, 2, 1): float(i + 1)} for i in range(3)}
-    universe = uni.monthly_universe(volumes, [date(2024, 3, 1), date(2024, 4, 1)], size=3)
+    universe = uni.monthly_universe(volumes, [date(2024, 3, 1), date(2024, 4, 1)], size=3,
+                                    min_history=1, trailing=1)
     assert uni.short_months(universe, size=3) == [date(2024, 4, 1)]
+
+
+def test_data_months_are_universe_months_plus_lookback_clipped_at_the_cutoff():
+    universe = {date(2020, 6, 1): ["RUSDT"], date(2025, 4, 1): ["RUSDT"],
+                date(2025, 2, 1): ["VUSDT"], date(2020, 1, 1): ["EUSDT"]}
+    dm = uni.data_months(universe, date(2020, 1, 1), date(2025, 1, 1), date(2026, 10, 1))
+    assert dm["RUSDT"] == set(uni.month_range(date(2020, 3, 1), date(2020, 7, 1))
+                              + uni.month_range(date(2025, 1, 1), date(2025, 5, 1)))
+    assert dm["VUSDT"] == {date(2025, 1, 1), date(2025, 2, 1)}       # no 2024 months
+    assert dm["EUSDT"] == {date(2020, 1, 1)}                         # nothing before RESEARCH_START
 
 
 def test_pair_first_ranked_in_2025_is_excluded_from_research_bars(tmp_path):

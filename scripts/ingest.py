@@ -26,8 +26,11 @@ from core.data.load import Window, load_symbol  # noqa: E402
 from core.db import get_db  # noqa: E402
 
 WORKERS = 16
-POOL_MAX = 100
+POOL_MAX = 170
+RANK_FROM = date(2019, 6, 1)   # 6 months of history before 2020-01, plus one
 POOL_FILE = binance.DATA_DIR / "pool.json"
+KB_PER_MONTH = {"spot": 43.4, "premium": 16.3}   # measured by probe on BTCUSDT 1h
+BARS_PER_MONTH = 744
 
 
 def manifest_file(test: bool) -> Path:
@@ -79,15 +82,17 @@ def cmd_probe(_args) -> int:
 
 
 def cmd_pool(args) -> int:
-    _, months, cutoff = window_months()
+    w, months, cutoff = window_months()
     size = int(env("UNIVERSE_SIZE"))
     symbols = binance.list_symbols("spot")
     eligible = uni.eligible_symbols(symbols)
     print(f"spot symbols in archive: {len(symbols)}; eligible USDT pairs: {len(eligible)}")
+    print(f"rule: top {size} by {uni.TRAILING}-month trailing quote volume, "
+          f"{uni.MIN_HISTORY}-month minimum history, {uni.LOOKBACK}-month lookback")
 
     available = dict(zip(eligible, pmap(lambda s: binance.list_months(s, args.rank_interval, "spot"),
                                         eligible)))
-    needed = {uni.prev_month(m) for m in months}
+    needed = set(uni.month_range(RANK_FROM, months[-1]))
     jobs = [(s, y, mo) for s, ms in available.items() for (y, mo) in ms if date(y, mo, 1) in needed]
     print(f"ranking files to download ({args.rank_interval}, no checksum): {len(jobs)}")
 
@@ -109,6 +114,14 @@ def cmd_pool(args) -> int:
         return 1
     research, vault_only = uni.split_pool(universe, cutoff)
     pool = sorted(research | vault_only)
+    if len(pool) > POOL_MAX:
+        print(f"STOP: pool {len(pool)} ({len(research)} research, {len(vault_only)} vault-only) "
+              f"is above {POOL_MAX}; pool.json not written")
+        return 1
+    dm = uni.data_months(universe, w.start.date(), cutoff, w.end.date())
+    pm_research = sum(1 for ms in dm.values() for m in ms if m < cutoff)
+    pm_vault = sum(1 for ms in dm.values() for m in ms if m >= cutoff)
+    pair_months = pm_research + pm_vault
 
     latest = max((ms[-1] for ms in available.values() if ms), default=None)
     ended = sorted(s for s, ms in available.items() if ms and ms[-1] < latest)
@@ -117,19 +130,26 @@ def cmd_pool(args) -> int:
     POOL_FILE.write_text(json.dumps({
         "rank_interval": args.rank_interval,
         "universe_size": size,
+        "min_history": uni.MIN_HISTORY,
+        "trailing": uni.TRAILING,
+        "lookback": uni.LOOKBACK,
         "universe": {key(m): syms for m, syms in universe.items()},
         "research_pairs": sorted(research),
         "vault_only_pairs": sorted(vault_only),
+        "data_months": {s: sorted(key(m) for m in ms) for s, ms in sorted(dm.items())},
         "ended_before_latest_month": ended,
     }, indent=1))
     print(f"pool: {len(pool)} pairs ({len(research)} research, {len(vault_only)} vault-only)")
     print(f"vault-only: {', '.join(sorted(vault_only)) or 'none'}")
     print(f"eligible pairs whose archive ends before {latest}: {len(ended)}; in pool: "
-          f"{', '.join(ended_in_pool) or 'none'}")
+          f"{len(ended_in_pool)}: {', '.join(ended_in_pool) or 'none'}")
+    print(f"pair-months to load: {pair_months} ({pm_research} research, {pm_vault} vault)")
+    spot_mb = pair_months * KB_PER_MONTH["spot"] / 1024
+    all_mb = pair_months * sum(KB_PER_MONTH.values()) / 1024
+    print(f"estimate, upper bound (every pair-month has spot and premium): download ~{all_mb:.0f} MB "
+          f"(spot ~{spot_mb:.0f} MB), documents ~{pair_months * BARS_PER_MONTH * 2 / 1e6:.1f}M "
+          f"(spot ~{pair_months * BARS_PER_MONTH / 1e6:.1f}M)")
     print(f"wrote {POOL_FILE}")
-    if len(pool) > POOL_MAX:
-        print(f"STOP: pool {len(pool)} is above {POOL_MAX}")
-        return 1
     return 0
 
 
@@ -141,12 +161,15 @@ def read_pool() -> dict:
     return pool
 
 
+def pool_months(pool: dict) -> dict[str, set[tuple[int, int]]]:
+    """Per symbol, the (year, month) pairs to download and load (D12)."""
+    return {s: {(ym(k).year, ym(k).month) for k in ks} for s, ks in pool["data_months"].items()}
+
+
 def cmd_download(args) -> int:
-    w, months, cutoff = window_months()
     pool = read_pool()
-    research = set(pool["research_pairs"])
-    symbols = sorted(research | set(pool["vault_only_pairs"]))
-    wanted = {s: {(m.year, m.month) for m in months if s in research or m >= cutoff} for s in symbols}
+    wanted = pool_months(pool)
+    symbols = sorted(wanted)
 
     pairs = [(s, k) for s in symbols for k in binance.KIND_PREFIX]
     listed = pmap(lambda p: binance.list_months(p[0], args.interval, p[1]), pairs)
@@ -187,15 +210,17 @@ def cmd_load(args) -> int:
     w, _, _ = window_months()
     pool = read_pool()
     research = set(pool["research_pairs"])
-    symbols = sorted(research | set(pool["vault_only_pairs"]))
+    wanted = pool_months(pool)
+    symbols = sorted(wanted)
     if args.symbols:
-        symbols = [s for s in args.symbols.split(",") if s in symbols]
+        symbols = [s for s in args.symbols.split(",") if s in wanted]
     db = get_db("admin", test=args.test)
     ensure_empty(db, ["research_bars", "vault_bars"])
     months = month_filter(args)
     manifest = {"db": db.name, "months": sorted(months) if months else "all", "symbols": {}}
     for s in symbols:
-        counts = load_symbol(db, s, w, s in research, args.interval, months=months)
+        load_months = wanted[s] & months if months else wanted[s]
+        counts = load_symbol(db, s, w, s in research, args.interval, months=load_months)
         manifest["symbols"][s] = {"in_research": s in research, **counts}
         print(f"{s:<14} research={counts['research']:<7} vault={counts['vault']}")
     manifest_file(args.test).write_text(json.dumps(manifest, indent=1))
