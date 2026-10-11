@@ -1,0 +1,22 @@
+[
+  { "_id": "pr01", "session_id": "demo-session-1", "ts": "2026-10-11T18:00:00Z", "text": "BTCUSDT 24h return reverts after a >3% 1h move", "family": "momentum", "hash": "7a1f9c3e2b8d4a61", "fixture": true },
+  { "_id": "pr02", "session_id": "demo-session-1", "ts": "2026-10-11T18:04:00Z", "text": "Pairs with falling quote volume underperform the next 4h", "family": "reversal", "hash": "3e9b2d7f1c4a5e08", "fixture": true },
+  { "_id": "pr03", "session_id": "demo-session-1", "ts": "2026-10-11T18:08:00Z", "text": "Top-5 quote-volume pairs lead the rest by 1h", "family": "liquidity_volume", "hash": "c4d81a6f3b9e2057", "fixture": true },
+  { "_id": "pr04", "session_id": "demo-session-1", "ts": "2026-10-11T18:12:00Z", "text": "Cross-sectional rank of 6h return predicts next 6h return", "family": "momentum", "hash": "91f3a7c2e8b40d65", "fixture": true },
+  { "_id": "pr05", "session_id": "demo-session-1", "ts": "2026-10-11T18:16:00Z", "text": "High-low range compresses before a breakout move", "family": "volatility_range", "hash": "5b7e2f9c1a3d8064", "fixture": true },
+  { "_id": "pr06", "session_id": "demo-session-1", "ts": "2026-10-11T18:20:00Z", "text": "Trade count spikes precede 1h momentum continuation", "family": "momentum", "hash": "2c8a4f6e9b1d7053", "fixture": true },
+
+  { "_id": "pr07", "session_id": "demo-session-2", "ts": "2026-10-11T18:40:00Z", "text": "Strength relative to BTC over 12h predicts next 12h", "family": "relative_strength", "hash": "e1b9c3f7a2d85046", "fixture": true },
+  { "_id": "pr08", "session_id": "demo-session-2", "ts": "2026-10-11T18:44:00Z", "text": "Pairs down 3 consecutive 1h bars bounce on the 4th", "family": "reversal", "hash": "9a4d7e1c3f8b2056", "fixture": true },
+  { "_id": "pr09", "session_id": "demo-session-2", "ts": "2026-10-11T18:48:00Z", "text": "6h cross-sectional momentum rank, rebalanced every 4 bars", "family": "momentum", "hash": "6f2b8a4d1e9c7035", "fixture": true },
+  { "_id": "pr10", "session_id": "demo-session-2", "ts": "2026-10-11T18:52:00Z", "text": "Quote volume share vs trailing 7d average leads price", "family": "liquidity_volume", "hash": "4d9e1b7f3a2c8061", "fixture": true },
+  { "_id": "pr11", "session_id": "demo-session-2", "ts": "2026-10-11T18:56:00Z", "text": "Intraday hour-of-day seasonality in 1h returns", "family": "intraday_structure", "hash": "8c3f6a2e9d1b4057", "fixture": true },
+  { "_id": "pr12", "session_id": "demo-session-2", "ts": "2026-10-11T19:00:00Z", "text": "Strength vs BTC over 24h, long top decile short bottom", "family": "relative_strength", "hash": "1e7b4d9a3f8c2064", "fixture": true },
+
+  { "_id": "pr13", "session_id": "demo-session-3", "ts": "2026-10-11T19:20:00Z", "text": "Futures premium widening predicts spot 4h drift", "family": "futures_premium", "hash": "a2f8c3e1b7d94065", "fixture": true },
+  { "_id": "pr14", "session_id": "demo-session-3", "ts": "2026-10-11T19:24:00Z", "text": "Cross-sectional rank of 6h return predicts next 6h return (rebalance 2 bars)", "family": "momentum", "hash": "91f3a7c2e8b40d66", "fixture": true },
+  { "_id": "pr15", "session_id": "demo-session-3", "ts": "2026-10-11T19:28:00Z", "text": "Pairs down 5 consecutive 1h bars bounce harder than 3", "family": "reversal", "hash": "d3a9f1c7e2b85048", "fixture": true },
+  { "_id": "pr16", "session_id": "demo-session-3", "ts": "2026-10-11T19:32:00Z", "text": "Quote volume acceleration over 3h leads the next 3h", "family": "liquidity_volume", "hash": "7b1e9c4a3f8d2059", "fixture": true },
+  { "_id": "pr17", "session_id": "demo-session-3", "ts": "2026-10-11T19:36:00Z", "text": "Strength vs BTC over 24h, long top quartile only", "family": "relative_strength", "hash": "f4c8a2e6b9d17063", "fixture": true },
+  { "_id": "pr18", "session_id": "demo-session-3", "ts": "2026-10-11T19:40:00Z", "text": "High-low range compression over 8h before breakout", "family": "volatility_range", "hash": "5b7e2f9c1a3d8099", "fixture": true }
+]
