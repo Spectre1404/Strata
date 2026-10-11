@@ -7,7 +7,15 @@ shows what's actually real in the running app — nothing staged.
 
 Record the app running against the fixture backend (`cd app && npm run
 dev`, http://localhost:3000) — no Atlas credentials needed, and the fixture
-data is the same shape as the real thing.
+data is the same shape as the real thing. **Put a visible "fixture data"
+label on screen for the whole recording** (a corner watermark or a title
+card) — this data is hand-authored, not the output of a real research
+session, and that should be obvious to a judge watching, not just true in
+the fine print.
+
+**Record only after PR #4 is merged** — it changes the highlight logic and
+the layout; recording against the pre-#4 state would show the wrong thing.
+(PR #4 merged as of this writing.)
 
 ## Shots
 
@@ -19,26 +27,31 @@ discovery. Strata makes forgetting impossible."*
 **0:10–0:30 — Panel B: the bar**
 Screen: slowly pan across the chart. Hover the dashed best-so-far line,
 then the rising blue full-memory bar, then the orange sawtooth session bar.
-Click the highlighted dot — the detail opens: "passes this session's test,
-fails the full-memory test."
+Click the highlighted dot — the chart's own caption reads "passes this
+session's test, fails the full-memory test"; the detail dialog that opens
+shows the two verdict badges exactly as labeled: "This session: Clears the
+bar" and "Full record: Doesn't clear the bar."
 Voiceover: *"Every attempt an agent makes raises the bar the next one has
 to clear. This dot looks like a win in its own session — but against
 everything Strata remembers, it isn't. That's luck passing as discovery,
 caught."*
 
-**0:30–0:45 — Panel A: the record**
-Screen: the live attempt stream — hypothesis, family, pre-registration
-hash, the query, the Sharpe. Point at the three counters (session / total /
-effective).
-Voiceover: *"Every attempt is in the record before the agent sees the
-result — hash-chained, insert-only. The database enforces that, not a
-prompt."*
+**0:30–0:45 — Panel A: the attempt stream**
+Screen: the attempt stream (fixture data, labeled on screen) — hypothesis,
+family, pre-registration hash, the query, the Sharpe. Point at the three
+counters (session / total / effective).
+Voiceover: *"This is the shape every real attempt will take: hypothesis,
+query, Sharpe, in before the agent sees the result. The hash chain and the
+insert-only enforcement that make it permanent are built at the database
+layer — the Atlas roles are live today; the agent writing to them isn't,
+yet."*
 
 **0:45–1:00 — What was built today**
 Screen: the README's "Built today" section, then the repo URL.
 Voiceover: *"Built today, October 11th, at the MongoDB hackathon — Atlas
-roles that make cheating structurally impossible, this page, and the
-record underneath it. Repo link's on screen."*
+roles that make cheating structurally impossible at the database layer,
+and this page, reading real market data checksummed in from Binance.
+Repo link's on screen."*
 
 ## Notes for recording
 
