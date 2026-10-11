@@ -4,7 +4,7 @@ Owner: Shiv (Phase 0). Runs against strata_test so it never touches live data.
 Usage: python scripts/check_setup.py
 Every row must show expected == actual.
 
-Status: written in the build sandbox; not yet run against Atlas.
+Status: passed 21/21 against Atlas on Oct 11, 2026.
 """
 import sys
 import uuid
