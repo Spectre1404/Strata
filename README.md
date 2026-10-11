@@ -44,7 +44,7 @@ Statement Two: Long Horizon Engineering. Secondary: Statement One: Recursive Har
 
 ## Run it
 
-Filled in during the build. Start with `setup/PHASE0.md`.
+See `REPRODUCE.md`.
 
 ## References
 
@@ -55,4 +55,12 @@ Filled in during the build. Start with `setup/PHASE0.md`.
 
 ## Built today
 
-To be completed in task T8: a list of every component built on October 11, 2026, with links to the commits.
+Everything in this repo was written during the event (10:45 AM – 5:00 PM PT, October 11, 2026, Shack15, SF).
+
+- **Scaffold** — plan, contracts, roles, setup checklist: [`a12e90c`](https://github.com/Spectre1404/Strata/commit/a12e90c)
+- **Phase 0** (Shiv) — Atlas collections, indexes, database users, `scripts/check_setup.py` passing 21/21 against the real sandbox: [`2928c00`](https://github.com/Spectre1404/Strata/commit/2928c00) ([PR #1](https://github.com/Spectre1404/Strata/pull/1))
+- **T1** (Talal) — Modelence app scaffold; Panel A (live research stream, counters, attempts-by-family chart) and Panel B (the Sharpe bar — per-session and full-memory thresholds, click-through verdict detail) on fixture data; a data layer that swaps fixtures for the real Atlas `app` role on one env var: [`6c60233`](https://github.com/Spectre1404/Strata/commit/6c60233), [`bcea54e`](https://github.com/Spectre1404/Strata/commit/bcea54e) ([PR #2](https://github.com/Spectre1404/Strata/pull/2))
+- **T3** (Talal) — Raindrop signals (`core/observe/signals.py`): one event plus one attached signal per call, named after `docs/CONTRACTS.md`'s kinds, silent no-op without a key, never crashes the caller: [`6cdad59`](https://github.com/Spectre1404/Strata/commit/6cdad59) ([PR #3](https://github.com/Spectre1404/Strata/pull/3))
+- **T4** (Talal) — Panel B as the page's dominant element (not an equal grid cell); app-role connection reads `MONGODB_URI_APP`/`MONGODB_DB` explicitly; the effective-attempts counter falls back to the total when grouping (T5) hasn't run: [`38a5538`](https://github.com/Spectre1404/Strata/commit/38a5538), [`500635a`](https://github.com/Spectre1404/Strata/commit/500635a) ([PR #4](https://github.com/Spectre1404/Strata/pull/4))
+
+See `REPRODUCE.md` for how to run this yourself.
