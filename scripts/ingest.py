@@ -1,8 +1,8 @@
 """S1 data ingest. Owner: Shiv. Rules in DECISIONS D11 and D12.
 
 Steps, in order:
-  probe                        check archive paths, timestamp units and 1mo ranking files
-  pool [--rank-interval 1mo]   point-in-time top 30 per month -> data/pool.json
+  probe                        check archive paths, timestamp units and ranking files
+  pool [--rank-interval 1d]    point-in-time top 30 per month -> data/pool.json
   download [--interval 1h]     hourly spot + premium for the pool, checksum-verified
   load --test|--live           split at RESEARCH_END and insert into research_bars / vault_bars
   universe --test|--live       insert universe rows for research months
@@ -101,6 +101,12 @@ def cmd_pool(args) -> int:
         volumes.setdefault(s, {})[m] = qv
 
     universe = uni.monthly_universe(volumes, months, size)
+    short = uni.short_months(universe, size)
+    if short:
+        for m in short:
+            print(f"STOP: {key(m)} ranked {len(universe[m])} pairs, fewer than {size}")
+        print("pool.json not written")
+        return 1
     research, vault_only = uni.split_pool(universe, cutoff)
     pool = sorted(research | vault_only)
 
@@ -262,7 +268,7 @@ def main() -> int:
     sub = p.add_subparsers(dest="cmd", required=True)
     sub.add_parser("probe")
     sp = sub.add_parser("pool")
-    sp.add_argument("--rank-interval", default="1mo", choices=["1mo", "1d"])
+    sp.add_argument("--rank-interval", default="1d", choices=["1d", "1mo"])
     sd = sub.add_parser("download")
     sd.add_argument("--interval", default=env("BAR_INTERVAL", "1h"))
     for name in ("load", "universe", "verify"):

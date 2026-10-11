@@ -136,6 +136,12 @@ def test_rank_uses_only_the_previous_month():
     assert uni.rank_month(volumes, date(2020, 2, 1), size=1) == ["AUSDT"]
 
 
+def test_month_with_missing_ranking_files_is_reported_short():
+    volumes = {f"P{i}USDT": {date(2024, 2, 1): float(i + 1)} for i in range(3)}
+    universe = uni.monthly_universe(volumes, [date(2024, 3, 1), date(2024, 4, 1)], size=3)
+    assert uni.short_months(universe, size=3) == [date(2024, 4, 1)]
+
+
 def test_pair_first_ranked_in_2025_is_excluded_from_research_bars(tmp_path):
     universe = {date(2024, 12, 1): ["BTCUSDT"], date(2025, 1, 1): ["BTCUSDT"],
                 date(2025, 2, 1): ["BTCUSDT", "NEWUSDT"]}

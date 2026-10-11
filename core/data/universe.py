@@ -75,6 +75,11 @@ def monthly_universe(volumes: dict[str, dict[date, float]], months: list[date],
     return {m: rank_month(volumes, m, size) for m in months}
 
 
+def short_months(universe: dict[date, list[str]], size: int) -> list[date]:
+    """Months that ranked fewer than `size` pairs, e.g. because ranking files are missing."""
+    return sorted(m for m, syms in universe.items() if len(syms) < size)
+
+
 def split_pool(universe: dict[date, list[str]], cutoff: date) -> tuple[set[str], set[str]]:
     """Return (research_pairs, vault_only_pairs)."""
     research = {s for m, syms in universe.items() if m < cutoff for s in syms}
