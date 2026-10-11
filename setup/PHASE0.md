@@ -20,6 +20,7 @@ Goal: Talal can start Phase 1 without asking anything.
 - [ ] Unique index on `trials` (`session_id`, `seq`).
 - [ ] Custom roles per `atlas/roles.md`. One database user per role. Save each connection string.
 - [ ] Network access: add both laptops' IP addresses (and Modelence's, if D7 says yes).
+  - Note: The venue Wi-Fi blocks at least one Atlas node on port 27017. Use a phone hotspot and add its IP to the Atlas IP Access List.
 - [ ] Vector Search index on `trial_groups` from `atlas/vector_index_trial_groups.json`.
 
 ## C. Repo
