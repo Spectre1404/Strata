@@ -1,0 +1,17 @@
+# Decisions
+
+Status: OPEN until answered. Record the answer, who decided, and when.
+
+| ID | Question | Options | Affects | Status |
+|---|---|---|---|---|
+| D1 | Data shape | A: hourly bars, ~30 pairs. B: minute bars, ~5 pairs | S1, S6, storage, demo sentence | DECIDED Oct 11 (Shiv): A, hourly bars, ~30 pairs |
+| D2 | Second domain for the "works beyond trading" moment | A: Strategist's own changes. B: outside dataset. C: table only | T7 | DECIDED Oct 11 (Shiv): C, a use-case table showing how Strata applies in each domain; no second adapter |
+| D3 | Talal's strongest language | Python, TypeScript, or both | T3, T5, T7 owner | DECIDED Oct 11 (Shiv): both; T3 and T5 stay with Talal |
+| D4 | Project name | Strata (proposed) | README, app, video | OPEN |
+| D5 | Trading costs | fee bps and spread bps, with source | S4 | Shiv sets in S4 |
+| D6 | Data rights | Ask organizers: Binance public archive stored in the sandbox, only download scripts in the repo | S1 | Shiv asks in Phase 0 |
+| D7 | Modelence and the sandbox | Can the Modelence app use the Atlas Sandbox connection string? Ask Aram | T1, T6 | Shiv asks in Phase 0 |
+| D8 | Sandbox tier and storage limit | Record what the sandbox allows. Estimate for D1: ~59,000 hourly bars per pair from 2020-01 to 2026-09; spot plus premium for 30 pairs is ~3.5M documents, more if the candidate pool is larger than 30 | S1 | Shiv checks in Phase 0 |
+| D9 | Talal's GitHub handle | For CODEOWNERS and collaborator invite | Repo | OPEN |
+| D10 | Problem statement on the submission form | Statement Two (proposed), Statement One secondary | Submission | OPEN |
+| D11 | Windows | Research 2020-01-01 to 2024-12-31; Vault 2025-01-01 to 2026-09-30 (proposed) | S1 | OPEN |

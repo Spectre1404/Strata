@@ -1,0 +1,20 @@
+# Each area is reviewed by the person who did not build it.
+
+# Shiv builds these; Talal reviews
+/core/data/        @talal2725
+/core/auditor/     @talal2725
+/core/researcher/  @talal2725
+/core/strategist/  @talal2725
+/core/strata/record.py  @talal2725
+/workers/          @talal2725
+/tests/test_stats.py    @talal2725
+
+# Talal builds these; Shiv reviews
+/app/              @Spectre1404
+/core/observe/     @Spectre1404
+/core/strata/grouping.py  @Spectre1404
+/tests/test_redteam.py    @Spectre1404
+
+# Shared agreements; both review
+/docs/             @Spectre1404 @talal2725
+/atlas/            @Spectre1404 @talal2725

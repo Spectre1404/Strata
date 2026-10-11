@@ -1,0 +1,10 @@
+.env
+.venv/
+__pycache__/
+*.pyc
+/data/
+*.zip
+*.parquet
+node_modules/
+.claude/settings.local.json
+.DS_Store

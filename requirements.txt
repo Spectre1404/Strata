@@ -1,0 +1,11 @@
+# Pin versions after first install: pip freeze > requirements.lock
+pymongo
+python-dotenv
+numpy
+pandas
+scipy
+arch
+anthropic
+requests
+raindrop-ai
+pytest
