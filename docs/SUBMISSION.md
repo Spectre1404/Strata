@@ -48,9 +48,12 @@ https://github.com/Spectre1404/Strata (public)
 
 ## Demo link
 
-**TODO — not deployed yet.** Needs `npx modelence deploy` from `app/`
-(Modelence Cloud) before this can be filled in. Flagging this now since
-it's the one hard blocker left for submission.
+https://strata-mv4cc03i032-prod.cloud.modelence.app
+
+Deployed via `npx modelence deploy` from `app/` (Modelence Cloud, free
+plan — carries their "Built with Modelence" badge). Verified live:
+`HTTP 200`, and the panels render identically to local dev. Runs on fixture
+data by default (same as local), per `REPRODUCE.md`.
 
 ## Team
 
